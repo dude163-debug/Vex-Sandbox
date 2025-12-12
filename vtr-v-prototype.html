@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>VEX Engine · BBC_V Module Prototype</title>
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bbc-mustard: #D4A017;
+    --bg-main: #000000;
+    --panel: #050509;
+    --panel-inner: #101018;
+    --text-main: #f5f5f5;
+    --text-muted: #a0a4b5;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: radial-gradient(circle at top, #151928 0, #05060a 55%);
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+                 "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-main);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  header {
+    width: min(1120px, 100vw - 32px);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  header .title {
+    color: #fff;
+  }
+
+  header .badge {
+    border: 1px solid var(--bbc-mustard);
+    border-radius: 999px;
+    padding: 2px 8px 3px;
+    font-size: 10px;
+    color: var(--bbc-mustard);
+  }
+
+  /* Module host card */
+  .module-card {
+    width: min(1120px, 100vw - 32px);
+  }
+
+  /* BBC_V internal styles (same vibe as before, just scoped to card) */
+
+  .bbc-frame {
+    width: 100%;
+    height: min(640px, 100vh - 180px);
+    border: 2px solid var(--bbc-mustard);
+    border-radius: 10px;
+    padding: 10px 12px 12px;
+    background: radial-gradient(circle at top, #151828 0, #050509 60%);
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 0 0 1px #262626,
+      0 18px 48px rgba(0, 0, 0, 0.85);
+  }
+
+  .bbc-frame-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .bbc-frame-header-left {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .bbc-frame-tag {
+    padding: 2px 6px 3px;
+    border-radius: 3px;
+    border: 1px solid var(--bbc-mustard);
+    font-weight: 600;
+    font-size: 10px;
+  }
+
+  .bbc-frame-title {
+    opacity: 0.9;
+  }
+
+  .bbc-frame-header-right {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.85;
+  }
+
+  .bbc-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #080910 0, #171928 55%, #080910 100%);
+    border: 1px solid #26293c;
+    margin-bottom: 8px;
+  }
+
+  .bbc-toolbar-group {
+    display: inline-flex;
+    gap: 4px;
+    padding-right: 10px;
+    border-right: 1px solid #333640;
+    align-items: center;
+  }
+
+  .bbc-toolbar-group:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .bbc-btn {
+    border: 1px solid #3e4250;
+    background: #11131d;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition:
+      background 120ms ease-out,
+      transform 80ms ease-out,
+      box-shadow 120ms ease-out,
+      border-color 120ms ease-out;
+  }
+
+  .bbc-btn span.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    border: 1px solid var(--bbc-mustard);
+    box-shadow: 0 0 4px rgba(212,160,23,0.7);
+  }
+
+  .bbc-btn.primary {
+    border-color: var(--bbc-mustard);
+    background: radial-gradient(circle at top, #262012 0, #17120a 55%);
+    box-shadow:
+      0 0 0 1px rgba(212,160,23,0.25),
+      0 0 22px rgba(212,160,23,0.35);
+  }
+
+  .bbc-btn.toggle {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .bbc-btn.toggle.active {
+    border-color: var(--bbc-mustard);
+    background: #262012;
+  }
+
+  .bbc-btn:hover {
+    background: #181b26;
+    transform: translateY(-0.5px);
+  }
+
+  .bbc-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .bbc-toolbar-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-left: auto;
+    opacity: 0.9;
+  }
+
+  .bbc-toolbar-label-small {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+
+  .bbc-viewport {
+    margin-top: 4px;
+    flex: 1;
+    border-radius: 8px;
+    background: radial-gradient(circle at center, #06060b 0, #020206 60%);
+    border: 1px solid #26293c;
+    padding: 10px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  .bbc-channel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bbc-channel-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .bbc-channel-label-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    border: 1px solid #444a5f;
+  }
+
+  .bbc-viewport-inner {
+    flex: 1;
+    border-radius: 6px;
+    border: 1px solid #393c4e;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bbc-viewport-inner.active-channel {
+    border-color: var(--bbc-mustard);
+    box-shadow: 0 0 0 1px rgba(212,160,23,0.45);
+  }
+
+  .bbc-status-strip {
+    margin-top: 6px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.85;
+  }
+
+  .bbc-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--bbc-mustard);
+    box-shadow: 0 0 6px rgba(212,160,23,0.8);
+    margin-right: 4px;
+  }
+
+  .bbc-status-left,
+  .bbc-status-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bbc-status-pill {
+    border-radius: 999px;
+    border: 1px solid #333640;
+    padding: 2px 8px 3px;
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 10px;
+  }
+
+  code {
+    font-family: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+    font-size: 10px;
+  }
+
+  /* Manual feed console (outside the module) */
+
+  .console {
+    width: min(1120px, 100vw - 32px);
+    border: 2px solid #444;
+    background: #0a0a0a;
+    border-radius: 8px;
+    padding: 10px 12px 12px;
+  }
+
+  .console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .console-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bbc-mustard);
+  }
+
+  .console-subtitle {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .console-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .console-select {
+    background: #11131d;
+    border-radius: 999px;
+    border: 1px solid #3e4250;
+    color: var(--text-main);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+  }
+
+  .console-textarea {
+    width: 100%;
+    height: 160px;
+    margin-top: 10px;
+    background: #000;
+    color: #f5f5f5;
+    border: 1px solid #333;
+    padding: 10px;
+    font-family: "JetBrains Mono", "SF Mono", monospace;
+    font-size: 12px;
+    border-radius: 6px;
+    resize: vertical;
+  }
+
+  .console button {
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">VEX ENGINE · MODULE PROTOTYPE</div>
+  <div class="badge">BBC_V · DUAL CHANNEL MONITOR</div>
+</header>
+
+<!-- Where VEX will mount BBC_V -->
+<div id="modules" class="module-card"></div>
+
+<!-- Manual feed console that uses the BBC_V module API -->
+<div class="console">
+  <div class="console-header">
+    <div>
+      <div class="console-title">BBC_V INPUT CONSOLE · MANUAL FEED</div>
+      <div class="console-subtitle">
+        Paste SVG · Route to Channel A or B · Press SEND
+      </div>
+    </div>
+    <div class="console-right">
+      <select id="routeSelect" class="console-select">
+        <option value="A">Route → Channel A</option>
+        <option value="B">Route → Channel B</option>
+      </select>
+      <button id="consoleSendBtn" class="bbc-btn primary">
+        SEND TO BBC_V
+      </button>
+    </div>
+  </div>
+
+  <textarea
+    id="svgInputField"
+    class="console-textarea"
+    placeholder="Paste SVG code here (starting with &lt;svg ...&gt; and ending with &lt;/svg&gt;)..."
+  ></textarea>
+</div>
+
+<script>
+/* -------------------------------------
+   VEX ENGINE — MODULE REGISTRY
+--------------------------------------*/
+const VEX = {
+  modules: {},
+  register(name, obj) { VEX.modules[name] = obj; },
+  get(name) { return VEX.modules[name]; }
+};
+
+/* -------------------------------------
+   BBC_V MODULE FACTORY
+   Dual-channel SVG monitor as a VEX module
+--------------------------------------*/
+function createBBC_V_Module() {
+  let root = null;
+  let activeChannel = "A";
+  let isPaused = false;
+
+  // DOM refs (filled on mount)
+  let artboardA, artboardB;
+  let viewportA, viewportB;
+  let statusSignal, statusOut, activeChannelLabel;
+  let btnPlayPause, playPauseLabel, btnFreeze, btnExport, btnExportFrozen;
+  let btnActiveA, btnActiveB;
+
+  function getSvg(channel = activeChannel) {
+    const artboard = channel === "B" ? artboardB : artboardA;
+    if (!artboard) return null;
+    return artboard.querySelector("svg");
+  }
+
+  function updateStatus() {
+    if (!statusSignal || !statusOut) return;
+    const svg = getSvg(activeChannel);
+    const ch = activeChannel;
+
+    if (!svg) {
+      statusSignal.textContent = "Chan " + ch + " · Idle · Awaiting Input";
+      statusOut.textContent = "—";
+      return;
+    }
+
+    statusSignal.textContent = "Chan " + ch + " · Linked · Live";
+    const vb = svg.getAttribute("viewBox");
+    const w = svg.getAttribute("width");
+    const h = svg.getAttribute("height");
+    let dim = "Chan " + ch + " · viewBox " + (vb || "none");
+    if (w || h) dim += " · " + (w || "?") + "×" + (h || "?");
+    statusOut.textContent = dim;
+  }
+
+  function updateActiveChannelUI() {
+    if (!viewportA || !viewportB || !btnActiveA || !btnActiveB || !activeChannelLabel) return;
+    ["A", "B"].forEach(ch => {
+      const btn = ch === "A" ? btnActiveA : btnActiveB;
+      const viewport = ch === "A" ? viewportA : viewportB;
+      const isActive = (ch === activeChannel);
+      btn.classList.toggle("active", isActive);
+      viewport.classList.toggle("active-channel", isActive);
+    });
+    activeChannelLabel.textContent = activeChannel;
+    updateStatus();
+  }
+
+  function downloadFromSvg(svgElement, filename) {
+    if (!svgElement) return;
+
+    const clone = svgElement.cloneNode(true);
+    if (!clone.getAttribute("xmlns")) {
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    }
+
+    const serializer = new XMLSerializer();
+    let source = serializer.serializeToString(clone);
+
+    if (!source.startsWith("<?xml")) {
+      source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
+    }
+
+    const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+  }
+
+  function makeFrozenClone(svgElement) {
+    if (!svgElement) return null;
+    const frozen = svgElement.cloneNode(true);
+
+    // strip SMIL animation
+    frozen.querySelectorAll("animate, animateTransform, animateMotion, set")
+      .forEach(node => node.parentNode && node.parentNode.removeChild(node));
+
+    // bake computed styles into attributes
+    const originals = [];
+    const originalWalker = document.createTreeWalker(svgElement, NodeFilter.SHOW_ELEMENT, null);
+    while (originalWalker.nextNode()) originals.push(originalWalker.currentNode);
+
+    const frozenWalker = document.createTreeWalker(frozen, NodeFilter.SHOW_ELEMENT, null);
+    let idx = 0;
+    while (frozenWalker.nextNode()) {
+      const el = frozenWalker.currentNode;
+      const src = originals[idx++];
+      if (!src) continue;
+
+      const computed = window.getComputedStyle(src);
+      const props = [
+        "stroke",
+        "stroke-width",
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "fill",
+        "opacity",
+        "stroke-opacity",
+        "fill-opacity"
+      ];
+      props.forEach(prop => {
+        const val = computed.getPropertyValue(prop);
+        if (val && val !== "none" && val !== "rgba(0, 0, 0, 0)") {
+          const attrName = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+          el.setAttribute(attrName, val.trim());
+        }
+      });
+    }
+
+    return frozen;
+  }
+
+  function pauseOrResumeAnimations(svgElement, pause) {
+    if (!svgElement) return;
+
+    try {
+      if (typeof svgElement.pauseAnimations === "function" &&
+          typeof svgElement.unpauseAnimations === "function") {
+        if (pause) svgElement.pauseAnimations();
+        else svgElement.unpauseAnimations();
+      }
+    } catch (e) {}
+
+    const all = svgElement.querySelectorAll("*");
+    all.forEach(node => {
+      const style = window.getComputedStyle(node);
+      const hasAnim = style.animationName && style.animationName !== "none";
+      if (hasAnim) {
+        node.style.animationPlayState = pause ? "paused" : "running";
+      }
+    });
+  }
+
+  function mount(container) {
+    root = container;
+    root.innerHTML = `
+      <div class="bbc-frame">
+        <div class="bbc-frame-header">
+          <div class="bbc-frame-header-left">
+            <div class="bbc-frame-tag">BBC_V</div>
+            <div class="bbc-frame-title">PLOTTER MONITOR · CHAN A / B</div>
+          </div>
+          <div class="bbc-frame-header-right">
+            V-TAPE · CONTOUR / TEXT / PEN
+          </div>
+        </div>
+
+        <div class="bbc-toolbar">
+          <div class="bbc-toolbar-group">
+            <button class="bbc-btn" data-role="playPause">
+              <span class="dot"></span>
+              <span data-role="playPauseLabel">Pause Motion</span>
+            </button>
+            <button class="bbc-btn" data-role="freeze">Freeze&nbsp;Preview</button>
+          </div>
+
+          <div class="bbc-toolbar-group">
+            <button class="bbc-btn primary" data-role="exportSvg">
+              Export&nbsp;SVG
+            </button>
+            <button class="bbc-btn" data-role="exportFrozen">
+              Export&nbsp;Frozen
+            </button>
+          </div>
+
+          <div class="bbc-toolbar-group">
+            <span class="bbc-toolbar-label-small">Active</span>
+            <button class="bbc-btn toggle active" data-role="activeA">Chan&nbsp;A</button>
+            <button class="bbc-btn toggle" data-role="activeB">Chan&nbsp;B</button>
+          </div>
+
+          <div class="bbc-toolbar-label">
+            BBC_V · Chan <span data-role="activeChannelLabel">A</span>
+          </div>
+        </div>
+
+        <div class="bbc-viewport">
+          <div class="bbc-channel">
+            <div class="bbc-channel-label">
+              <span class="bbc-channel-label-dot"></span> CHANNEL A
+            </div>
+            <div class="bbc-viewport-inner active-channel" data-role="viewportA">
+              <div data-role="artboardA"></div>
+            </div>
+          </div>
+
+          <div class="bbc-channel">
+            <div class="bbc-channel-label">
+              <span class="bbc-channel-label-dot"></span> CHANNEL B
+            </div>
+            <div class="bbc-viewport-inner" data-role="viewportB">
+              <div data-role="artboardB"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bbc-status-strip">
+          <div class="bbc-status-left">
+            <span class="bbc-status-dot"></span>
+            <span>Signal: <span data-role="statusSignal">Chan A · Idle · Awaiting Input</span></span>
+          </div>
+          <div class="bbc-status-right">
+            <span class="bbc-status-pill">
+              SRC: <code>vex://local/bbc-v/A,B</code>
+            </span>
+            <span class="bbc-status-pill">
+              OUT: <span data-role="statusOut">—</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wire refs
+    artboardA = root.querySelector("[data-role='artboardA']");
+    artboardB = root.querySelector("[data-role='artboardB']");
+    viewportA = root.querySelector("[data-role='viewportA']");
+    viewportB = root.querySelector("[data-role='viewportB']");
+    statusSignal = root.querySelector("[data-role='statusSignal']");
+    statusOut = root.querySelector("[data-role='statusOut']");
+    activeChannelLabel = root.querySelector("[data-role='activeChannelLabel']");
+
+    btnPlayPause = root.querySelector("[data-role='playPause']");
+    playPauseLabel = root.querySelector("[data-role='playPauseLabel']");
+    btnFreeze = root.querySelector("[data-role='freeze']");
+    btnExport = root.querySelector("[data-role='exportSvg']");
+    btnExportFrozen = root.querySelector("[data-role='exportFrozen']");
+    btnActiveA = root.querySelector("[data-role='activeA']");
+    btnActiveB = root.querySelector("[data-role='activeB']");
+
+    // Button wiring
+    btnPlayPause.addEventListener("click", () => {
+      const svg = getSvg();
+      if (!svg) return;
+      isPaused = !isPaused;
+      pauseOrResumeAnimations(svg, isPaused);
+      playPauseLabel.textContent = isPaused ? "Resume Motion" : "Pause Motion";
+    });
+
+    btnFreeze.addEventListener("click", () => {
+      const svg = getSvg();
+      if (!svg) return;
+      const viewport = activeChannel === "A" ? viewportA : viewportB;
+      if (!viewport) return;
+
+      const oldOverlay = viewport.querySelector(".vex-freeze-overlay");
+      if (oldOverlay) oldOverlay.remove();
+
+      const frozen = makeFrozenClone(svg);
+      if (!frozen) return;
+
+      const overlay = document.createElement("div");
+      overlay.className = "vex-freeze-overlay";
+      overlay.style.position = "absolute";
+      overlay.style.inset = "10px";
+      overlay.style.pointerEvents = "none";
+      overlay.style.display = "flex";
+      overlay.style.justifyContent = "center";
+      overlay.style.alignItems = "center";
+
+      frozen.style.maxWidth = "100%";
+      frozen.style.maxHeight = "100%";
+      overlay.appendChild(frozen);
+      viewport.appendChild(overlay);
+
+      statusSignal.textContent = "Chan " + activeChannel + " · Frozen Preview";
+    });
+
+    btnExport.addEventListener("click", () => {
+      const svg = getSvg();
+      if (!svg) return;
+      downloadFromSvg(svg, "bbc-v-chan" + activeChannel + ".svg");
+    });
+
+    btnExportFrozen.addEventListener("click", () => {
+      const svg = getSvg();
+      if (!svg) return;
+      const frozen = makeFrozenClone(svg);
+      if (!frozen) return;
+      downloadFromSvg(frozen, "bbc-v-chan" + activeChannel + "-frozen.svg");
+    });
+
+    btnActiveA.addEventListener("click", () => {
+      activeChannel = "A";
+      isPaused = false;
+      if (playPauseLabel) playPauseLabel.textContent = "Pause Motion";
+      updateActiveChannelUI();
+    });
+
+    btnActiveB.addEventListener("click", () => {
+      activeChannel = "B";
+      isPaused = false;
+      if (playPauseLabel) playPauseLabel.textContent = "Pause Motion";
+      updateActiveChannelUI();
+    });
+
+    updateActiveChannelUI();
+  }
+
+  // Public API for other VEX modules
+  function setSvg(channel, svgCode) {
+    const artboard = channel === "B" ? artboardB : artboardA;
+    const viewport = channel === "B" ? viewportB : viewportA;
+    if (!artboard || !viewport) return;
+
+    isPaused = false;
+    if (playPauseLabel) playPauseLabel.textContent = "Pause Motion";
+
+    artboard.innerHTML = "";
+    const oldOverlay = viewport.querySelector(".vex-freeze-overlay");
+    if (oldOverlay) oldOverlay.remove();
+
+    artboard.insertAdjacentHTML("beforeend", svgCode);
+    activeChannel = channel;
+    updateActiveChannelUI();
+  }
+
+  function getLiveSvg(channel) {
+    const svg = getSvg(channel);
+    return svg ? svg.outerHTML : null;
+  }
+
+  function getFrozenSvg(channel) {
+    const svg = getSvg(channel);
+    if (!svg) return null;
+    const frozen = makeFrozenClone(svg);
+    return frozen ? frozen.outerHTML : null;
+  }
+
+  return {
+    id: "BBC_V",
+    mount,
+    setSvg,
+    getLiveSvg,
+    getFrozenSvg
+  };
+}
+
+/* -------------------------------------
+   REGISTER BBC_V WITH VEX
+--------------------------------------*/
+VEX.register("BBC_V", createBBC_V_Module());
+
+/* -------------------------------------
+   BOOTSTRAP — mount BBC_V into #modules
+--------------------------------------*/
+window.addEventListener("DOMContentLoaded", () => {
+  const host = document.getElementById("modules");
+  const bbc = VEX.get("BBC_V");
+  bbc.mount(host);
+
+  // Manual console wiring: sends SVG to module
+  const sendBtn = document.getElementById("consoleSendBtn");
+  const routeSelect = document.getElementById("routeSelect");
+  const field = document.getElementById("svgInputField");
+
+  sendBtn.addEventListener("click", () => {
+    const code = field.value.trim();
+    if (!code) return;
+    const ch = routeSelect.value === "B" ? "B" : "A";
+    bbc.setSvg(ch, code);
+  });
+
+  // Optional: seed with a demo animated SVG in Channel A
+  const demoSvg = `
+  <svg viewBox="0 0 200 200" width="200" height="200">
+    <circle cx="100" cy="100" r="70"
+            stroke="#D4A017"
+            stroke-width="3"
+            fill="none"
+            stroke-dasharray="440">
+      <animate attributeName="stroke-dashoffset"
+               from="0" to="440"
+               dur="3s"
+               repeatCount="indefinite"/>
+    </circle>
+  </svg>`;
+  bbc.setSvg("A", demoSvg);
+});
+</script>
+
+</body>
+</html>
